@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     Runner.run(Runner.create(), engine);
 
     // ── Constants ──
-    const STORAGE_KEY = 'apple_todos_v19';
+    const STORAGE_KEY = 'apple_todos_v20';
     const AW = 100, AH = 106, AR = 50; 
     const MAX_APPLES = 22; // Capacity check
 
@@ -195,10 +195,10 @@ document.addEventListener('DOMContentLoaded', () => {
         let px, py, tries = 0;
         while (tries < 60) {
             const a = Math.random() * Math.PI * 2;
-            const rx = 240, ry = 250; 
+            const rx = 240, ry = 220; 
             const d = Math.sqrt(Math.random()); 
             const tx = 300 + Math.cos(a) * rx * d - AW / 2;
-            const ty = 160 + Math.sin(a) * ry * d - AH / 2; // Matched to new massive foliage center
+            const ty = 90 + Math.sin(a) * ry * d - AH / 2; // Shifted UP even more
             const ok = existing.every(el => {
                 const ex = parseFloat(el.style.left), ey = parseFloat(el.style.top);
                 return Math.hypot(ex - tx, ey - ty) >= 95; 
@@ -206,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (ok) { px = tx; py = ty; break; }
             tries++;
         }
-        if (px === undefined) { px = 300; py = 160; }
+        if (px === undefined) { px = 300; py = 90; }
 
         apple.style.left = px + 'px';
         apple.style.top = py + 'px';
@@ -368,7 +368,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const harvestModal = document.getElementById('harvest-modal');
     const bulletinBtn = document.getElementById('floating-bulletin-btn');
     const closeModalBtn = document.getElementById('close-modal-btn');
-    const clearBasketModal = document.getElementById('clear-basket'); // Re-using existing ID or updated one
 
     if (bulletinBtn && harvestModal) {
         bulletinBtn.addEventListener('click', () => {
@@ -386,7 +385,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ── Gyroscope Gravity Control ──
     if (window.DeviceOrientationEvent) {
-        // Request permission on first interaction (needed for iOS)
         if (typeof DeviceOrientationEvent.requestPermission === 'function') {
             addBtn.addEventListener('click', () => {
                 DeviceOrientationEvent.requestPermission()
@@ -401,18 +399,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function startGyro() {
         window.addEventListener('deviceorientation', (event) => {
             if (event.beta !== null && event.gamma !== null) {
-                // beta: front/back tilt (-180 to 180)
-                // gamma: left/right tilt (-90 to 90)
-                // Normalize tilt to gravity. Max tilt around 45deg for max pull.
                 const grx = (event.gamma / 45) * 1.5;
                 const gry = (event.beta / 45) * 1.5;
-                
-                // Keep it within reasonable bounds
                 engine.world.gravity.x = Math.max(-2, Math.min(2, grx));
                 engine.world.gravity.y = Math.max(-2, Math.min(2, gry));
             }
         });
     }
-
-    // ── Init ──
 });

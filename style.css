@@ -44,7 +44,7 @@ header {
 }
 
 h1 {
-    font-size: 1.5rem; /* Further reduced */
+    font-size: 1.4rem;
     font-weight: 800;
     color: var(--text-primary);
     margin-bottom: 2px;
@@ -52,20 +52,21 @@ h1 {
 
 .input-group {
     display: flex;
-    gap: 8px;
+    align-items: stretch;
     background: white;
-    padding: 6px;
-    border-radius: 28px;
+    padding: 4px;
+    border-radius: 30px;
     box-shadow: 0 4px 15px var(--shadow);
-    max-width: 450px;
+    max-width: 500px;
     margin: 0 auto;
+    overflow: hidden;
 }
 
 input[type="text"] {
     width: 80%;
     border: none;
-    padding: 12px 20px;
-    font-size: 1.15rem;
+    padding: 10px 15px;
+    font-size: 1.1rem;
     font-family: inherit;
     outline: none;
     background: transparent;
@@ -73,18 +74,18 @@ input[type="text"] {
 
 .apple-add-btn {
     width: 20%;
-    height: 52px;
+    min-width: 60px;
+    height: 48px;
     background: var(--apple-red);
     color: white;
     border: none;
-    border-radius: 20px;
-    font-size: 1.8rem;
+    border-radius: 24px;
+    font-size: 1.6rem;
     display: flex;
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    box-shadow: 0 4px 10px rgba(229, 57, 53, 0.3);
-    transition: transform 0.1s, background 0.2s;
+    transition: transform 0.1s;
 }
 .apple-add-btn:hover { transform: scale(1.1); background: #d32f2f; }
 .apple-add-btn:active { transform: scale(0.95); }
@@ -413,32 +414,37 @@ footer {
         box-shadow: none;
     }
     
-    h1 { font-size: 1.95rem; }
-    .subtitle { font-size: 1.05rem; margin-bottom: 20px; }
+    h1 { font-size: 1.3rem; }
     
-    /* Input and Add Button Stack */
     .input-group {
-        flex-direction: column;
-        background: transparent;
-        padding: 0;
-        gap: 12px;
+        display: flex; /* Force row */
+        flex-direction: row; 
+        background: white;
+        padding: 4px;
+        gap: 0;
     }
     .input-group input {
-        background: white;
-        border-radius: 16px;
-        padding: 18px;
-        font-size: 1.2rem;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        width: 75%;
+        padding: 12px;
+        font-size: 1rem;
     }
-    button#add-btn {
-        width: 100%;
-        border-radius: 16px;
-        padding: 18px;
-        font-size: 1.25rem;
-        font-weight: bold;
+    .apple-add-btn {
+        width: 25%;
+        height: 48px;
+        font-size: 1.4rem;
+        border-radius: 24px;
     }
-    
-    /* Removing the problematic manual CSS scaling values so JS purely handles the garden layout */
+}
+
+/* ───────── Desktop Scaling ───────── */
+@media (min-width: 1024px) {
+    .garden-area {
+        transform: scale(0.9);
+        margin-top: -60px;
+    }
+    .app-container {
+        padding: 30px 60px;
+    }
 }
 
 ::-webkit-scrollbar { width: 6px; }
