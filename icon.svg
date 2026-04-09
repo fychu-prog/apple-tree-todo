@@ -1,9 +1,24 @@
-<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-    <!-- Apple Body -->
-    <circle cx="50" cy="55" r="40" fill="#e53935"/>
-    <circle cx="35" cy="40" r="15" fill="#ff5252" opacity="0.5"/>
-    <!-- Stem -->
-    <line x1="50" y1="15" x2="50" y2="25" stroke="#5d4037" stroke-width="4" stroke-linecap="round"/>
-    <!-- Leaf -->
-    <path d="M50,25 Q35,5 30,20 Q35,30 50,25" fill="#4caf50"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <g fill="#2D5A27">
+    <!-- Tree Trunk -->
+    <path d="M47,65 L53,65 L54,90 C54,92 53,93 50,93 C47,93 46,92 46,90 Z" />
+    
+    <!-- Tree Foliage -->
+    <path d="M50,10 C32,10 18,24 18,42 C18,52 23,61 30,67 L70,67 C77,61 82,52 82,42 C82,24 68,10 50,10 Z" />
+    
+    <!-- Checkmark (Todo Vibe) -->
+    <path d="M43,45 L48,50 L58,38" fill="none" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+    
+    <!-- Outline Apple 1 (TL) -->
+    <circle cx="35" cy="30" r="5" fill="none" stroke="white" stroke-width="2.5" />
+    <path d="M35,25 L37,22" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" />
+    
+    <!-- Outline Apple 2 (TR) -->
+    <circle cx="65" cy="32" r="5" fill="none" stroke="white" stroke-width="2.5" />
+    <path d="M65,27 L67,24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" />
+    
+    <!-- Outline Apple 3 (BR) -->
+    <circle cx="68" cy="52" r="5" fill="none" stroke="white" stroke-width="2.5" />
+    <path d="M68,47 L70,44" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" />
+  </g>
 </svg>

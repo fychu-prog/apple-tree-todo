@@ -44,8 +44,8 @@ header {
 }
 
 h1 {
-    font-size: 1.8rem;
-    font-weight: 700;
+    font-size: 1.5rem; /* Further reduced */
+    font-weight: 800;
     color: var(--text-primary);
     margin-bottom: 2px;
 }
@@ -62,23 +62,23 @@ h1 {
 }
 
 input[type="text"] {
-    flex: 1;
+    width: 80%;
     border: none;
-    padding: 10px 18px;
-    font-size: 1.1rem;
+    padding: 12px 20px;
+    font-size: 1.15rem;
     font-family: inherit;
     outline: none;
     background: transparent;
 }
 
 .apple-add-btn {
-    width: 48px;
-    height: 48px;
+    width: 20%;
+    height: 52px;
     background: var(--apple-red);
     color: white;
     border: none;
-    border-radius: 50%;
-    font-size: 1.6rem;
+    border-radius: 20px;
+    font-size: 1.8rem;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -94,7 +94,6 @@ input[type="text"] {
     width: 100%;
     display: flex;
     justify-content: center;
-    overflow: hidden;
 }
 .garden-area {
     width: 650px;

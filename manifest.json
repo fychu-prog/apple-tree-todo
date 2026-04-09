@@ -1,6 +1,6 @@
 {
-  "name": "蘋果樹待辦系統",
-  "short_name": "蘋果待辦",
+  "name": "蘋果待辦樹",
+  "short_name": "蘋果待辦樹",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#ffffff",

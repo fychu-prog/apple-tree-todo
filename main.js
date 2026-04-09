@@ -19,8 +19,9 @@ document.addEventListener('DOMContentLoaded', () => {
     Runner.run(Runner.create(), engine);
 
     // ── Constants ──
-    const STORAGE_KEY = 'apple_todos_v17';
-    const AW = 100, AH = 106, AR = 50; // AR = AW/2 so physics circle matches visual apple exactly
+    const STORAGE_KEY = 'apple_todos_v19';
+    const AW = 100, AH = 106, AR = 50; 
+    const MAX_APPLES = 22; // Capacity check
 
     // Clear all old storage versions
     for (let i = 1; i <= 12; i++) {
@@ -194,18 +195,18 @@ document.addEventListener('DOMContentLoaded', () => {
         let px, py, tries = 0;
         while (tries < 60) {
             const a = Math.random() * Math.PI * 2;
-            const rx = 240, ry = 220; // Expanded and taller foliage area
+            const rx = 240, ry = 250; 
             const d = Math.sqrt(Math.random()); 
             const tx = 300 + Math.cos(a) * rx * d - AW / 2;
-            const ty = 120 + Math.sin(a) * ry * d - AH / 2; // Moved UP to match new foliage
+            const ty = 160 + Math.sin(a) * ry * d - AH / 2; // Matched to new massive foliage center
             const ok = existing.every(el => {
                 const ex = parseFloat(el.style.left), ey = parseFloat(el.style.top);
-                return Math.hypot(ex - tx, ey - ty) >= 110; // Slightly denser to allow 20 items
+                return Math.hypot(ex - tx, ey - ty) >= 95; 
             });
             if (ok) { px = tx; py = ty; break; }
             tries++;
         }
-        if (px === undefined) { px = 300; py = 120; }
+        if (px === undefined) { px = 300; py = 160; }
 
         apple.style.left = px + 'px';
         apple.style.top = py + 'px';
@@ -324,6 +325,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ── Events ──
     addBtn.addEventListener('click', () => {
+        const currentApples = applesContainer.querySelectorAll('.apple:not(.harvested)').length;
+        if (currentApples >= MAX_APPLES) {
+            alert('樹上的空間已經滿載囉！🍎 讓這顆蘋果稍微休息一下吧。\n\n先鼓勵你自己完成幾個待辦事項採收成果，才能繼續種下新的目標喔！✨');
+            return;
+        }
+
         const val = todoInput.value.trim();
         if (val) { addApple(val); todoInput.value = ''; }
     });
