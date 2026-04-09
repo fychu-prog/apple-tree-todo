@@ -2,8 +2,13 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>蘋果樹待辦事項 - 舒適採收每一天</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- PWA settings -->
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#4CAF50">
+    <link rel="apple-touch-icon" href="./icon.svg">
+    
+    <title>蘋果待辦樹 - 舒適採收每一天</title>
     <meta name="description" content="一個充滿成就感的待辦事項網頁，讓你的任務像蘋果一樣在樹上成長，完成後收穫到籃子裡。">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,29 +19,32 @@
 <body>
     <div class="app-container">
         <header>
-            <h1>蘋果樹待辦清單</h1>
-            <p class="subtitle">將目標種下，收穫滿盈的一天</p>
+            <h1>🍎 蘋果待辦樹</h1>
             <div class="input-group">
                 <input type="text" id="todo-input" placeholder="想要完成什麼任務？" aria-label="待辦事項內容">
-                <button id="add-btn">種下蘋果</button>
+                <button id="add-btn" class="apple-add-btn">🍎</button>
             </div>
         </header>
 
-        <main class="garden-area" id="garden-main">
+        <div id="garden-wrapper" class="garden-wrapper">
+            <main class="garden-area" id="garden-main">
             <!-- Physics overlay - falling apples render here -->
             <div id="physics-world" class="physics-world"></div>
 
             <div class="tree-container">
                 <div class="tree-svg-wrapper">
-                    <svg viewBox="0 0 600 700" xmlns="http://www.w3.org/2000/svg" class="main-tree">
-                        <path d="M280,700 Q300,550 300,450 Q300,350 220,250" stroke="#5D4037" stroke-width="24" fill="none" stroke-linecap="round"/>
-                        <path d="M320,700 Q300,550 300,450 Q300,350 380,250" stroke="#5D4037" stroke-width="24" fill="none" stroke-linecap="round"/>
-                        <path d="M300,500 L300,350" stroke="#5D4037" stroke-width="18" fill="none" stroke-linecap="round"/>
-                        <circle cx="300" cy="280" r="200" fill="#4CAF50" />
-                        <circle cx="180" cy="280" r="160" fill="#66BB6A" />
-                        <circle cx="420" cy="280" r="160" fill="#81C784" />
-                        <circle cx="300" cy="120" r="150" fill="#2E7D32" />
-                        <circle cx="150" cy="160" r="130" fill="#388E3C" />
+                    <svg viewBox="0 -200 600 900" xmlns="http://www.w3.org/2000/svg" class="main-tree">
+                        <path d="M280,700 Q300,650 300,600 Q300,550 220,500" stroke="#5D4037" stroke-width="24" fill="none" stroke-linecap="round"/>
+                        <path d="M320,700 Q300,650 300,600 Q300,550 380,500" stroke="#5D4037" stroke-width="24" fill="none" stroke-linecap="round"/>
+                        <path d="M300,600 L300,500" stroke="#5D4037" stroke-width="18" fill="none" stroke-linecap="round"/>
+                        <circle cx="300" cy="180" r="240" fill="#4CAF50" />
+                        <circle cx="100" cy="180" r="190" fill="#66BB6A" />
+                        <circle cx="500" cy="180" r="190" fill="#81C784" />
+                        <circle cx="300" cy="50" r="180" fill="#2E7D32" />
+                        <circle cx="100" cy="50" r="150" fill="#388E3C" />
+                        <circle cx="500" cy="50" r="150" fill="#43A047" />
+                        <circle cx="200" cy="-50" r="160" fill="#2E7D32" />
+                        <circle cx="400" cy="-50" r="160" fill="#4CAF50" />
                         <circle cx="450" cy="160" r="130" fill="#43A047" />
                         <circle cx="220" cy="100" r="100" fill="#4CAF50" />
                         <circle cx="380" cy="100" r="100" fill="#66BB6A" />
@@ -49,7 +57,7 @@
             <div class="basket-outer" id="basket-outer">
             <!-- Metal wire basket - back layer (fills the inside) -->
             <div class="basket-layer basket-back">
-                <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg">
+                <svg viewBox="0 0 320 220" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <linearGradient id="metalBg" x1="0" y1="0" x2="0" y2="1">
                             <stop offset="0%" stop-color="#b0b8c1"/>
@@ -57,12 +65,18 @@
                         </linearGradient>
                     </defs>
                     <!-- Filled trapezoid body -->
-                    <path d="M20,60 L300,60 L260,180 L60,180 Z" fill="url(#metalBg)" opacity="0.5"/>
+                    <path d="M15,60 L305,60 L260,200 L60,200 Z" fill="url(#metalBg)" opacity="0.5"/>
                 </svg>
             </div>
-            <!-- Metal wire basket - front layer (wire frame on top) -->
-            <div class="basket-layer basket-front">
-                <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg">
+            <div class="basket-stats">
+                <span class="basket-label">已收穫 (<span id="count">0</span>) 顆</span>
+                <button id="clear-basket" class="text-btn">清空所有紀錄</button>
+            </div>
+            </div>
+
+            <!-- Metal wire basket - front layer extracted to sit OVER physical apples (z-index 30) -->
+            <div class="basket-outer-front" id="basket-outer-front" style="pointer-events: none;">
+                <svg viewBox="0 0 320 220" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <linearGradient id="wireGrad" x1="0" y1="0" x2="1" y2="1">
                             <stop offset="0%" stop-color="#dde3ea"/>
@@ -70,42 +84,57 @@
                             <stop offset="100%" stop-color="#c5cdd6"/>
                         </linearGradient>
                     </defs>
-                    <!-- Outer frame -->
-                    <path d="M20,60 L300,60 L260,180 L60,180 Z"
-                        fill="none" stroke="url(#wireGrad)" stroke-width="3.5" stroke-linejoin="round"/>
-                    <!-- Top arc rim -->
-                    <path d="M20,60 Q160,20 300,60" fill="none" stroke="#c5cdd6" stroke-width="5" stroke-linecap="round"/>
-                    <!-- Rim highlight -->
-                    <path d="M30,58 Q160,22 290,58" fill="none" stroke="#eef1f4" stroke-width="1.5" opacity="0.7"/>
-
-                    <!-- Vertical wires -->
-                    <line x1="60" y1="60" x2="80" y2="180" stroke="#9aa5b1" stroke-width="1.5"/>
-                    <line x1="100" y1="60" x2="110" y2="180" stroke="#9aa5b1" stroke-width="1.5"/>
-                    <line x1="140" y1="60" x2="140" y2="180" stroke="#9aa5b1" stroke-width="1.5"/>
-                    <line x1="180" y1="60" x2="170" y2="180" stroke="#9aa5b1" stroke-width="1.5"/>
-                    <line x1="220" y1="60" x2="200" y2="180" stroke="#9aa5b1" stroke-width="1.5"/>
-                    <line x1="260" y1="60" x2="230" y2="180" stroke="#9aa5b1" stroke-width="1.5"/>
-
-                    <!-- Horizontal wires -->
-                    <line x1="33" y1="100" x2="287" y2="100" stroke="#9aa5b1" stroke-width="1.5"/>
-                    <line x1="47" y1="140" x2="273" y2="140" stroke="#9aa5b1" stroke-width="1.5"/>
+                    <path d="M15,60 L305,60 L260,200 L60,200 Z" fill="none" stroke="url(#wireGrad)" stroke-width="3.5" stroke-linejoin="round"/>
+                    <path d="M15,60 Q160,20 305,60" fill="none" stroke="#c5cdd6" stroke-width="5" stroke-linecap="round"/>
+                    <path d="M25,58 Q160,22 295,58" fill="none" stroke="#eef1f4" stroke-width="1.5" opacity="0.7"/>
+                    <line x1="57" y1="60" x2="85" y2="200" stroke="#9aa5b1" stroke-width="1.5"/>
+                    <line x1="100" y1="60" x2="120" y2="200" stroke="#9aa5b1" stroke-width="1.5"/>
+                    <line x1="145" y1="60" x2="155" y2="200" stroke="#9aa5b1" stroke-width="1.5"/>
+                    <line x1="180" y1="60" x2="190" y2="200" stroke="#9aa5b1" stroke-width="1.5"/>
+                    <line x1="225" y1="60" x2="225" y2="200" stroke="#9aa5b1" stroke-width="1.5"/>
+                    <line x1="260" y1="60" x2="250" y2="200" stroke="#9aa5b1" stroke-width="1.5"/>
+                    <line x1="28" y1="106" x2="292" y2="106" stroke="#9aa5b1" stroke-width="1.5"/>
+                    <line x1="44" y1="153" x2="276" y2="153" stroke="#9aa5b1" stroke-width="1.5"/>
                 </svg>
             </div>
-                <div class="basket-stats">
-                    <span class="basket-label">已收穫 <span id="count">0</span> 顆</span>
-                    <button id="clear-basket" class="text-btn">清空</button>
-                </div>
-            </div>
-
-            <div id="harvested-apples" class="harvested-list-container">
-                <ul id="done-list"></ul>
-            </div>
         </main>
+        <!-- Floating Bulletin Button -->
+        <button id="floating-bulletin-btn" class="floating-btn" aria-label="查看收穫公告欄">
+            <span class="btn-icon">📋</span>
+            <span class="btn-badge" id="badge-count">0</span>
+        </button>
 
         <footer>
-            <p>© 2026 蘋果樹待辦系統</p>
+            <p>© 2026 蘋果待辦樹</p>
         </footer>
     </div>
+
+    <!-- Harvested List Modal (Notice Board style) -->
+    <div id="harvest-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content notice-board">
+            <div class="modal-header">
+                <h2>📜 收穫布告欄</h2>
+                <button id="close-modal-btn" class="icon-btn">✕</button>
+            </div>
+            <div id="harvested-apples-list" class="harvested-list-container">
+                <ul id="done-list"></ul>
+            </div>
+            <div class="modal-footer">
+                <button id="clear-basket" class="text-btn">清空所有紀錄</button>
+            </div>
+        </div>
+    </div>
+
     <script src="main.js"></script>
+    <!-- Register PWA Service Worker -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('Service Worker 註冊成功!', reg))
+                    .catch(err => console.log('Service Worker 註冊失敗:', err));
+            });
+        }
+    </script>
 </body>
 </html>

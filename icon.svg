@@ -1,0 +1,9 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <!-- Apple Body -->
+    <circle cx="50" cy="55" r="40" fill="#e53935"/>
+    <circle cx="35" cy="40" r="15" fill="#ff5252" opacity="0.5"/>
+    <!-- Stem -->
+    <line x1="50" y1="15" x2="50" y2="25" stroke="#5d4037" stroke-width="4" stroke-linecap="round"/>
+    <!-- Leaf -->
+    <path d="M50,25 Q35,5 30,20 Q35,30 50,25" fill="#4caf50"/>
+</svg>

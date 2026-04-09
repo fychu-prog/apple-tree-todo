@@ -19,8 +19,8 @@ document.addEventListener('DOMContentLoaded', () => {
     Runner.run(Runner.create(), engine);
 
     // ── Constants ──
-    const STORAGE_KEY = 'apple_todos_v13';
-    const AW = 72, AH = 76, AR = 36; // AR = AW/2 so physics circle matches visual apple exactly
+    const STORAGE_KEY = 'apple_todos_v17';
+    const AW = 100, AH = 106, AR = 50; // AR = AW/2 so physics circle matches visual apple exactly
 
     // Clear all old storage versions
     for (let i = 1; i <= 12; i++) {
@@ -35,7 +35,15 @@ document.addEventListener('DOMContentLoaded', () => {
     function relPos(el) {
         const r = el.getBoundingClientRect();
         const g = gardenEl.getBoundingClientRect();
-        return { x: r.left - g.left, y: r.top - g.top, w: r.width, h: r.height };
+        // gardenEl might be scaled via transform: scale()
+        // we must calculate everything in unscaled 650x900 coordinate space for physics engine
+        const scale = g.width / gardenEl.offsetWidth;
+        return { 
+            x: (r.left - g.left) / scale, 
+            y: (r.top - g.top) / scale, 
+            w: r.width / scale, 
+            h: r.height / scale 
+        };
     }
 
     // ── Build basket walls from actual SVG positions ──
@@ -46,44 +54,57 @@ document.addEventListener('DOMContentLoaded', () => {
         const backSvg = document.querySelector('.basket-back');
         if (!backSvg) return;
         const bp = relPos(backSvg);
-        // SVG viewBox = "0 0 320 200"
-        const sx = bp.w / 320, sy = bp.h / 200;
-
-        // Basket Bottom Ground: y=180, from x=60 to x=260
-        const gndCx = bp.x + 160 * sx;
-        const gndCy = bp.y + 180 * sy;
-        const gndW  = 200 * sx;
+        
+        // Exact mapping from viewBox "0 0 320 220"
+        const s = bp.w / 320; // 1.875
+        const svgOffY = (bp.h - 220 * s) / 2; 
+        
+        // Basket Bottom Ground: y=200, from x=60 to x=260
+        const gndW = 200 * s;
+        const gndCx = bp.x + 160 * s;
+        const gndCy = bp.y + svgOffY + 200 * s;
+        // The rect's own center is y, so we place it slightly below its surface to avoid too thick floor
         const ground = Bodies.rectangle(gndCx, gndCy + 10, gndW + 20, 20, {
             isStatic: true, friction: 1
         });
 
-        // Left wall: shifted left from SVG edge (20,60) → (60,180)
-        const lx1 = bp.x + 15 * sx, ly1 = bp.y + 55 * sy;
-        const lx2 = bp.x + 55 * sx, ly2 = bp.y + 185 * sy;
+        // Left wall: from (15,60) to (60,200)
+        // Move wall inwards slightly dynamically
+        const lx1 = bp.x + 20 * s, ly1 = bp.y + svgOffY + 60 * s;
+        const lx2 = bp.x + 60 * s, ly2 = bp.y + svgOffY + 200 * s;
         const lcx = (lx1 + lx2) / 2, lcy = (ly1 + ly2) / 2;
         const llen = Math.hypot(lx2 - lx1, ly2 - ly1);
         const lang = Math.atan2(ly2 - ly1, lx2 - lx1) - Math.PI / 2;
-        const leftW = Bodies.rectangle(lcx, lcy, 6, llen + 20, {
+        const leftW = Bodies.rectangle(lcx - 5, lcy, 10, llen + 40, {
             isStatic: true, angle: lang, friction: 0.2
         });
 
-        // Right wall: shifted right from SVG edge (300,60) → (260,180)
-        const rx1 = bp.x + 305 * sx, ry1 = bp.y + 55 * sy;
-        const rx2 = bp.x + 265 * sx, ry2 = bp.y + 185 * sy;
+        // Right wall: from (305,60) to (260,200)
+        const rx1 = bp.x + 300 * s, ry1 = bp.y + svgOffY + 60 * s;
+        const rx2 = bp.x + 260 * s, ry2 = bp.y + svgOffY + 200 * s;
         const rcx = (rx1 + rx2) / 2, rcy = (ry1 + ry2) / 2;
         const rlen = Math.hypot(rx2 - rx1, ry2 - ry1);
         const rang = Math.atan2(ry2 - ry1, rx2 - rx1) - Math.PI / 2;
-        const rightW = Bodies.rectangle(rcx, rcy, 6, rlen + 20, {
+        const rightW = Bodies.rectangle(rcx + 5, rcy, 10, rlen + 40, {
             isStatic: true, angle: rang, friction: 0.2
         });
 
-        // Screen floor out of bounds (so if they bounce out, you can pick them up)
-        const g = gardenEl.getBoundingClientRect();
-        const screenGround = Bodies.rectangle(g.width / 2, g.height + 50, g.width * 2, 100, {
+        // Screen floor and literal container bounds (glass walls)
+        const gw = gardenEl.offsetWidth;  // Unscaled width (e.g. 650)
+        const gh = gardenEl.offsetHeight; // Unscaled height (e.g. 900)
+        
+        // Container boundaries so apples don't fall off the window
+        // Keep them bounded inside the garden area
+        const wallThickness = 100;
+        const leftBound = Bodies.rectangle(-wallThickness/2, gh / 2, wallThickness, gh * 2, { isStatic: true });
+        const rightBound = Bodies.rectangle(gw + wallThickness/2, gh / 2, wallThickness, gh * 2, { isStatic: true });
+        const topBound = Bodies.rectangle(gw / 2, -wallThickness/2 - 100, gw * 2, wallThickness, { isStatic: true });
+        
+        const screenGround = Bodies.rectangle(gw / 2, gh + 50, gw * 2, 100, {
             isStatic: true, friction: 0.8
         });
 
-        walls = [ground, leftW, rightW, screenGround];
+        walls = [ground, leftW, rightW, screenGround, leftBound, rightBound, topBound];
         Composite.add(world, walls);
 
         console.log('Basket walls built:', {
@@ -93,9 +114,27 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // ── Responsive Scaling ──
+    function resizeGarden() {
+        const wrapper = document.getElementById('garden-wrapper');
+        if (!wrapper) return;
+        let w = wrapper.clientWidth;
+        if (w > 650) w = 650;
+        const scale = w / 650;
+        gardenEl.style.transform = `scale(${scale})`;
+        gardenEl.style.marginBottom = `-${(1 - scale) * 900}px`;
+    }
+
     // Build walls after layout settles
-    setTimeout(buildWalls, 300);
-    window.addEventListener('resize', buildWalls);
+    setTimeout(() => {
+        resizeGarden();
+        buildWalls();
+    }, 300);
+    
+    window.addEventListener('resize', () => {
+        resizeGarden();
+        buildWalls();
+    });
 
     // ── Render loop: sync DOM elements to physics bodies ──
     (function animate() {
@@ -114,7 +153,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const TEST_ITEMS = [
         '早起喝水', '伸展運動', '閱讀15分鐘', '整理桌面', '寫日記',
         '聽音樂', '澆花', '冥想5分鐘', '規劃明天', '保持微笑',
-        '做家事', '散步', '學習新知', '感謝日記', '早點睡覺'
+        '做家事', '散步', '學習新知', '感謝日記', '早點睡覺',
+        '吃健康五蔬果', '學習外語', '給家人打電話', '讀專業文章', '專注工作番茄鐘'
     ];
 
     if (saved.todos.length === 0 && saved.harvested.length === 0) {
@@ -125,18 +165,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Respawn harvested apples inside basket (after walls are built)
     setTimeout(() => {
-        const bp = relPos(document.querySelector('.basket-back') || basketEl);
-        const sx = bp.w / 200, sy = bp.h / 120;
-        const cx = bp.x + 100 * sx;
-        const topY = bp.y + 50 * sy;
-
+        const bp = relPos(document.querySelector('.basket-back'));
+        const cx = bp.x + bp.w / 2;
+        const topY = bp.y - 100; // Drop from slightly above the basket
+        
         saved.harvested.forEach((task, i) => {
-            addToHarvestList(task);
             setTimeout(() => {
                 spawnPhysApple(task, cx + (Math.random() * 80 - 40), topY);
             }, i * 180);
         });
-        updateHarvestVisibility();
     }, 400);
 
     // ── Add a green apple to the tree ──
@@ -157,17 +194,18 @@ document.addEventListener('DOMContentLoaded', () => {
         let px, py, tries = 0;
         while (tries < 60) {
             const a = Math.random() * Math.PI * 2;
-            const d = Math.random() * 190;
-            const tx = 300 + Math.cos(a) * d - AW / 2;
-            const ty = 230 + Math.sin(a) * d - AH / 2;
+            const rx = 240, ry = 220; // Expanded and taller foliage area
+            const d = Math.sqrt(Math.random()); 
+            const tx = 300 + Math.cos(a) * rx * d - AW / 2;
+            const ty = 120 + Math.sin(a) * ry * d - AH / 2; // Moved UP to match new foliage
             const ok = existing.every(el => {
                 const ex = parseFloat(el.style.left), ey = parseFloat(el.style.top);
-                return Math.hypot(ex - tx, ey - ty) >= 80;
+                return Math.hypot(ex - tx, ey - ty) >= 110; // Slightly denser to allow 20 items
             });
             if (ok) { px = tx; py = ty; break; }
             tries++;
         }
-        if (px === undefined) { px = 300; py = 230; }
+        if (px === undefined) { px = 300; py = 120; }
 
         apple.style.left = px + 'px';
         apple.style.top = py + 'px';
@@ -180,11 +218,12 @@ document.addEventListener('DOMContentLoaded', () => {
     function harvest(apple, text) {
         if (apple.classList.contains('harvested')) return;
 
-        // CRITICAL: Capture exact center position BEFORE any CSS transform is applied
+        // CRITICAL: Capture exact offset center position ignoring container scale
         const ar = apple.getBoundingClientRect();
         const gr = gardenEl.getBoundingClientRect();
-        const cx = ar.left - gr.left + ar.width / 2;
-        const cy = ar.top - gr.top + ar.height / 2;
+        const scale = gr.width / gardenEl.offsetWidth;
+        const cx = (ar.left - gr.left) / scale + (ar.width / scale) / 2;
+        const cy = (ar.top - gr.top) / scale + (ar.height / scale) / 2;
 
         // Turn red on tree (no transform to avoid coord shift)
         apple.classList.add('harvested');
@@ -242,9 +281,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!draggedBodyInfo) return;
         const { body } = draggedBodyInfo;
         const gr = gardenEl.getBoundingClientRect();
-        // Calculate pointer position in world coordinates
-        const px = e.clientX - gr.left;
-        const py = e.clientY - gr.top;
+        
+        // Calculate the current visual scale of the garden
+        const wrapper = document.getElementById('garden-wrapper');
+        let w = wrapper ? wrapper.clientWidth : 650;
+        if (w > 650) w = 650;
+        const scale = w / 650;
+
+        // Calculate pointer position relative to garden in unscaled physics coordinates
+        const px = (e.clientX - gr.left) / scale;
+        const py = (e.clientY - gr.top) / scale;
         
         // Directly set position for responsive feel, or apply forces
         Body.setPosition(body, { x: px, y: py });
@@ -262,19 +308,18 @@ document.addEventListener('DOMContentLoaded', () => {
     function addToHarvestList(text) {
         const li = document.createElement('li');
         li.className = 'done-item';
-        li.textContent = '🍎 ' + text;
+        li.textContent = text;
         doneList.prepend(li);
-        updateHarvestVisibility();
-    }
-
-    function updateHarvestVisibility() {
-        harvestContainer.style.display = doneList.children.length > 0 ? 'block' : 'none';
     }
 
     function persist() {
         const todos = Array.from(applesContainer.querySelectorAll('.apple:not(.harvested)')).map(a => a.dataset.task);
-        const harvested = Array.from(doneList.querySelectorAll('.done-item')).map(li => li.textContent.replace('🍎 ', ''));
+        const harvested = Array.from(doneList.querySelectorAll('.done-item')).map(li => li.textContent);
         localStorage.setItem(STORAGE_KEY, JSON.stringify({ todos, count: harvestedCount, harvested }));
+        
+        // Update Floating Badge
+        const badge = document.getElementById('badge-count');
+        if (badge) badge.textContent = harvestedCount;
     }
 
     // ── Events ──
@@ -287,16 +332,80 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     clearBtn.addEventListener('click', () => {
-        if (!confirm('確定清空所有收穫紀錄？')) return;
+        if (!confirm('確定清空所有收穫紀錄與重置籃子嗎？')) return;
+        
+        // Remove harvested list UI elements
         doneList.innerHTML = '';
+        
+        // Remove physical apples from world and DOM
         physApples.forEach(({ body, element }) => {
             Composite.remove(world, body);
             element.remove();
         });
         physApples.length = 0;
+        
+        // Reactivate apples on the tree so they can be dropped again
+        document.querySelectorAll('.harvested').forEach(el => {
+            el.classList.remove('harvested');
+            el.style.pointerEvents = 'auto'; // Re-enable clicking
+            el.style.opacity = '1';
+            el.style.zIndex = '1';
+        });
+        
         harvestedCount = 0;
         countDisplay.textContent = '0';
-        updateHarvestVisibility();
         persist();
     });
+
+    // ── Notice Board UI Logic ──
+    const harvestModal = document.getElementById('harvest-modal');
+    const bulletinBtn = document.getElementById('floating-bulletin-btn');
+    const closeModalBtn = document.getElementById('close-modal-btn');
+    const clearBasketModal = document.getElementById('clear-basket'); // Re-using existing ID or updated one
+
+    if (bulletinBtn && harvestModal) {
+        bulletinBtn.addEventListener('click', () => {
+            harvestModal.style.display = 'flex';
+        });
+        closeModalBtn.addEventListener('click', () => {
+            harvestModal.style.display = 'none';
+        });
+        harvestModal.addEventListener('click', (e) => {
+            if (e.target === harvestModal) {
+                harvestModal.style.display = 'none';
+            }
+        });
+    }
+
+    // ── Gyroscope Gravity Control ──
+    if (window.DeviceOrientationEvent) {
+        // Request permission on first interaction (needed for iOS)
+        if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+            addBtn.addEventListener('click', () => {
+                DeviceOrientationEvent.requestPermission()
+                    .then(state => { if (state === 'granted') startGyro(); })
+                    .catch(console.error);
+            }, { once: true });
+        } else {
+            startGyro();
+        }
+    }
+
+    function startGyro() {
+        window.addEventListener('deviceorientation', (event) => {
+            if (event.beta !== null && event.gamma !== null) {
+                // beta: front/back tilt (-180 to 180)
+                // gamma: left/right tilt (-90 to 90)
+                // Normalize tilt to gravity. Max tilt around 45deg for max pull.
+                const grx = (event.gamma / 45) * 1.5;
+                const gry = (event.beta / 45) * 1.5;
+                
+                // Keep it within reasonable bounds
+                engine.world.gravity.x = Math.max(-2, Math.min(2, grx));
+                engine.world.gravity.y = Math.max(-2, Math.min(2, gry));
+            }
+        });
+    }
+
+    // ── Init ──
 });

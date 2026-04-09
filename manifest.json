@@ -1,0 +1,17 @@
+{
+  "name": "蘋果樹待辦系統",
+  "short_name": "蘋果待辦",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4CAF50",
+  "description": "將目標種下，收穫滿盈的一天",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
