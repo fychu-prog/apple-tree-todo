@@ -118,8 +118,8 @@ input[type="text"] {
 .garden-area {
     width: 800px;
     min-width: 800px;
-    /* Widened to prevent side leaves from being clipped */
-    height: 900px;
+    /* Widened and shortened for compact screens */
+    height: 750px;
     position: relative;
     transform-origin: top center;
 }
@@ -148,10 +148,10 @@ input[type="text"] {
 
 .apples-layer {
     position: absolute;
-    top: 50px;
+    top: 5px; /* Shifting layer center UP */
     left: 50%;
     transform: translateX(-50%);
-    width: 600px;
+    width: 700px;
     height: 450px;
     pointer-events: none;
     z-index: 5;
@@ -264,8 +264,7 @@ input[type="text"] {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin: -110px auto 0;
-    /* Center horizontally, cover the trunk */
+    margin: -360px auto 0; /* Raised up much higher (from -110px) */
     z-index: 5;
     filter: drop-shadow(0 6px 18px rgba(80, 100, 120, 0.25));
 }
@@ -284,14 +283,12 @@ input[type="text"] {
 
 .basket-outer-front {
     position: absolute;
-    bottom: -110px;
-    /* Match basket-outer placement */
+    bottom: -150px; /* Raise front layer too (offset for 750px height) */
     left: 50%;
     transform: translateX(-50%);
     width: 600px;
     height: 420px;
     z-index: 30;
-    /* Over physics-world */
     pointer-events: none;
     display: flex;
     justify-content: center;
