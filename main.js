@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     Runner.run(Runner.create(), engine);
 
     // ── Constants ──
-    const STORAGE_KEY = 'apple_todos_v28';
+    const STORAGE_KEY = 'apple_todos_v29';
     const AW = 90, AH = 96, AR = 45; 
     const MAX_APPLES = 22; // Capacity check
 
@@ -125,14 +125,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const availH = window.innerHeight - container.offsetTop - 120; // Spare some for header/footer
         const availW = wrapper.clientWidth;
         
-        // Target unscaled size is 900x650 (Extra compact height)
+        // Target unscaled size is 900x650
         const scaleW = availW / 900;
         const scaleH = availH / 650;
         const scale = Math.min(scaleW, scaleH, 1.0); 
         
         gardenEl.style.transform = `scale(${scale})`;
-        // Balance the bottom margin
-        gardenEl.style.marginBottom = `-${(1 - scale) * 650}px`;
+        // Increase bottom buffer slightly for stable basket visibility
+        gardenEl.style.marginBottom = `-${(1 - scale) * 650 - 15}px`;
     }
 
     // Build walls after layout settles
@@ -171,6 +171,15 @@ document.addEventListener('DOMContentLoaded', () => {
         TEST_ITEMS.forEach(t => addApple(t));
     } else {
         saved.todos.forEach(t => addApple(t));
+        // Load harvested list items into the UI
+        if (saved.harvested && saved.harvested.length > 0) {
+            saved.harvested.forEach(text => {
+                const li = document.createElement('li');
+                li.className = 'done-item';
+                li.innerHTML = `<span>🍎 ${text}</span>`;
+                doneList.append(li);
+            });
+        }
     }
 
     // Respawn harvested apples inside basket (after walls are built)
@@ -204,10 +213,10 @@ document.addEventListener('DOMContentLoaded', () => {
         let px, py, tries = 0;
         while (tries < 60) {
             const a = Math.random() * Math.PI * 2;
-            const rx = 280, ry = 110; 
+            const rx = 280, ry = 130; // Increased vertical spread for better leaf coverage
             const d = Math.sqrt(Math.random()); 
             const tx = 450 + Math.cos(a) * rx * d - AW / 2;
-            const ty = 180 + Math.sin(a) * ry * d - AH / 2; // Shifted UP even further (from 200 to 180)
+            const ty = 230 + Math.sin(a) * ry * d - AH / 2; // Moved DOWN (from 180 to 230)
             const ok = existing.every(el => {
                 const ex = parseFloat(el.style.left), ey = parseFloat(el.style.top);
                 return Math.hypot(ex - tx, ey - ty) >= 90; 
@@ -215,7 +224,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (ok) { px = tx; py = ty; break; }
             tries++;
         }
-        if (px === undefined) { px = 450; py = 180; }
+        if (px === undefined) { px = 450; py = 230; }
 
         apple.style.left = px + 'px';
         apple.style.top = py + 'px';
@@ -318,13 +327,16 @@ document.addEventListener('DOMContentLoaded', () => {
     function addToHarvestList(text) {
         const li = document.createElement('li');
         li.className = 'done-item';
-        li.textContent = text;
+        li.innerHTML = `<span>🍎 ${text}</span>`;
         doneList.prepend(li);
     }
 
     function persist() {
         const todos = Array.from(applesContainer.querySelectorAll('.apple:not(.harvested)')).map(a => a.dataset.task);
-        const harvested = Array.from(doneList.querySelectorAll('.done-item')).map(li => li.textContent);
+        const harvested = Array.from(doneList.querySelectorAll('.done-item')).map(li => {
+            const span = li.querySelector('span');
+            return span ? span.textContent.replace('🍎 ', '') : li.textContent;
+        });
         localStorage.setItem(STORAGE_KEY, JSON.stringify({ todos, count: harvestedCount, harvested }));
         
         // Update Floating Badge
