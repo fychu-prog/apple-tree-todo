@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     Runner.run(Runner.create(), engine);
 
     // ── Constants ──
-    const STORAGE_KEY = 'apple_todos_v24';
+    const STORAGE_KEY = 'apple_todos_v25';
     const AW = 90, AH = 96, AR = 45; 
     const MAX_APPLES = 22; // Capacity check
 
@@ -125,14 +125,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const availH = window.innerHeight - container.offsetTop - 120; // Spare some for header/footer
         const availW = wrapper.clientWidth;
         
-        // Target unscaled size is 650x900
-        const scaleW = availW / 650;
+        // Target unscaled size is 800x900 (widened for foliage)
+        const scaleW = availW / 800;
         const scaleH = availH / 900;
-        const scale = Math.min(scaleW, scaleH, 1.0); // Never scale UP, only down to fit
+        const scale = Math.min(scaleW, scaleH, 1.0); 
         
         gardenEl.style.transform = `scale(${scale})`;
-        // Balance the bottom margin so the layout doesn't leave a huge gap or overlap
-        gardenEl.style.marginBottom = `-${(1 - scale) * 900}px`;
+        // Balance the bottom margin, adding a 20px buffer for the basket bottom
+        gardenEl.style.marginBottom = `-${(1 - scale) * 900 - 20}px`;
     }
 
     // Build walls after layout settles
@@ -204,9 +204,9 @@ document.addEventListener('DOMContentLoaded', () => {
         let px, py, tries = 0;
         while (tries < 60) {
             const a = Math.random() * Math.PI * 2;
-            const rx = 200, ry = 100; // Even tighter for fitting
+            const rx = 240, ry = 110; // Wider horizontal spread
             const d = Math.sqrt(Math.random()); 
-            const tx = 300 + Math.cos(a) * rx * d - AW / 2;
+            const tx = 400 + Math.cos(a) * rx * d - AW / 2;
             const ty = 300 + Math.sin(a) * ry * d - AH / 2; // Centralized in leaves
             const ok = existing.every(el => {
                 const ex = parseFloat(el.style.left), ey = parseFloat(el.style.top);
@@ -216,7 +216,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (ok) { px = tx; py = ty; break; }
             tries++;
         }
-        if (px === undefined) { px = 300; py = 280; }
+        if (px === undefined) { px = 400; py = 280; }
 
         apple.style.left = px + 'px';
         apple.style.top = py + 'px';
