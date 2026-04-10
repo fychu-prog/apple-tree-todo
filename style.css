@@ -45,6 +45,8 @@ body {
 header {
     text-align: center;
     margin-bottom: 20px;
+    position: relative;
+    z-index: 100;
 }
 
 h1 {
@@ -143,7 +145,7 @@ input[type="text"] {
 
 .apples-layer {
     position: absolute;
-    top: 30px;
+    top: 50px;
     left: 50%;
     transform: translateX(-50%);
     width: 600px;

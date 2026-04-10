@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     Runner.run(Runner.create(), engine);
 
     // ── Constants ──
-    const STORAGE_KEY = 'apple_todos_v20';
+    const STORAGE_KEY = 'apple_todos_v22';
     const AW = 100, AH = 106, AR = 50; 
     const MAX_APPLES = 22; // Capacity check
 
@@ -195,10 +195,10 @@ document.addEventListener('DOMContentLoaded', () => {
         let px, py, tries = 0;
         while (tries < 60) {
             const a = Math.random() * Math.PI * 2;
-            const rx = 240, ry = 220; 
+            const rx = 210, ry = 110; // Tighter vertical spread
             const d = Math.sqrt(Math.random()); 
             const tx = 300 + Math.cos(a) * rx * d - AW / 2;
-            const ty = 140 + Math.sin(a) * ry * d - AH / 2; // Lowered from 90 to avoid header overlap
+            const ty = 280 + Math.sin(a) * ry * d - AH / 2; // Much lower center (280px)
             const ok = existing.every(el => {
                 const ex = parseFloat(el.style.left), ey = parseFloat(el.style.top);
                 return Math.hypot(ex - tx, ey - ty) >= 95; 
@@ -206,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (ok) { px = tx; py = ty; break; }
             tries++;
         }
-        if (px === undefined) { px = 300; py = 90; }
+        if (px === undefined) { px = 300; py = 280; }
 
         apple.style.left = px + 'px';
         apple.style.top = py + 'px';
