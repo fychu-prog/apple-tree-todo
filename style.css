@@ -22,8 +22,8 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    overflow-x: hidden;
-    padding: 20px;
+    overflow: hidden; /* Prevent scrolling */
+    padding: 10px;
 }
 
 .app-container {
@@ -31,15 +31,18 @@ body {
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
     border-radius: 32px;
-    padding: 20px 40px;
-    /* Reduced top/bottom padding */
+    padding: 15px 30px;
     width: 100%;
     max-width: 850px;
+    height: calc(100vh - 20px);
+    max-height: 95vh;
     box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
     display: flex;
     flex-direction: column;
-    gap: 30px;
+    justify-content: space-between;
+    gap: 10px;
     border: 1px solid rgba(255, 255, 255, 0.4);
+    overflow: hidden;
 }
 
 header {
@@ -157,8 +160,8 @@ input[type="text"] {
 /* ───────── Apple ───────── */
 .apple {
     position: absolute;
-    width: 100px;
-    height: 106px;
+    width: 90px;
+    height: 96px;
     background: #8BC34A;
     border-radius: 50% 50% 45% 45%;
     display: flex;
@@ -209,13 +212,13 @@ input[type="text"] {
 }
 
 .apple-label {
-    font-size: 1.65rem;
+    font-size: 1.45rem;
     /* Large enough to read tasks clearly */
     color: white;
     font-weight: 700;
     text-align: center;
     padding: 0 8px;
-    line-height: 1.15;
+    line-height: 1.1;
     word-break: break-all;
     display: -webkit-box;
     -webkit-line-clamp: 3;
@@ -502,14 +505,13 @@ footer {
 
 /* ───────── Desktop Scaling ───────── */
 @media (min-width: 1024px) {
-    .garden-area {
-        transform: scale(0.9);
-    }
     .garden-wrapper {
-        margin-top: 40px;
+        margin-top: 5px;
+        flex: 1; /* Take remaining space */
+        min-height: 0;
     }
     .app-container {
-        padding: 40px 60px;
+        padding: 20px 40px;
     }
 }
 

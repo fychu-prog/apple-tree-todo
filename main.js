@@ -19,8 +19,8 @@ document.addEventListener('DOMContentLoaded', () => {
     Runner.run(Runner.create(), engine);
 
     // ── Constants ──
-    const STORAGE_KEY = 'apple_todos_v22';
-    const AW = 100, AH = 106, AR = 50; 
+    const STORAGE_KEY = 'apple_todos_v24';
+    const AW = 90, AH = 96, AR = 45; 
     const MAX_APPLES = 22; // Capacity check
 
     // Clear all old storage versions
@@ -115,14 +115,23 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // ── Responsive Scaling ──
+    // ── Responsive Scaling: Fit to Screen ──
     function resizeGarden() {
         const wrapper = document.getElementById('garden-wrapper');
-        if (!wrapper) return;
-        let w = wrapper.clientWidth;
-        if (w > 650) w = 650;
-        const scale = w / 650;
+        const container = document.querySelector('.app-container');
+        if (!wrapper || !container) return;
+        
+        // Calculate available space
+        const availH = window.innerHeight - container.offsetTop - 120; // Spare some for header/footer
+        const availW = wrapper.clientWidth;
+        
+        // Target unscaled size is 650x900
+        const scaleW = availW / 650;
+        const scaleH = availH / 900;
+        const scale = Math.min(scaleW, scaleH, 1.0); // Never scale UP, only down to fit
+        
         gardenEl.style.transform = `scale(${scale})`;
+        // Balance the bottom margin so the layout doesn't leave a huge gap or overlap
         gardenEl.style.marginBottom = `-${(1 - scale) * 900}px`;
     }
 
@@ -195,13 +204,14 @@ document.addEventListener('DOMContentLoaded', () => {
         let px, py, tries = 0;
         while (tries < 60) {
             const a = Math.random() * Math.PI * 2;
-            const rx = 210, ry = 110; // Tighter vertical spread
+            const rx = 200, ry = 100; // Even tighter for fitting
             const d = Math.sqrt(Math.random()); 
             const tx = 300 + Math.cos(a) * rx * d - AW / 2;
-            const ty = 280 + Math.sin(a) * ry * d - AH / 2; // Much lower center (280px)
+            const ty = 300 + Math.sin(a) * ry * d - AH / 2; // Centralized in leaves
             const ok = existing.every(el => {
                 const ex = parseFloat(el.style.left), ey = parseFloat(el.style.top);
-                return Math.hypot(ex - tx, ey - ty) >= 95; 
+                // Reduce overlap threshold slightly for visual density
+                return Math.hypot(ex - tx, ey - ty) >= 85; 
             });
             if (ok) { px = tx; py = ty; break; }
             tries++;
