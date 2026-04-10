@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     Runner.run(Runner.create(), engine);
 
     // ── Constants ──
-    const STORAGE_KEY = 'apple_todos_v29';
+    const STORAGE_KEY = 'apple_todos_v30';
     const AW = 90, AH = 96, AR = 45; 
     const MAX_APPLES = 22; // Capacity check
 
@@ -64,8 +64,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const gndW = 200 * s;
         const gndCx = bp.x + 160 * s;
         const gndCy = bp.y + svgOffY + 200 * s;
-        // The rect's own center is y, so we place it slightly below its surface to avoid too thick floor
-        const ground = Bodies.rectangle(gndCx, gndCy + 10, gndW + 20, 20, {
+        // The rect's own center is y, lowered by an extra 15px to let apples sink deeper
+        const ground = Bodies.rectangle(gndCx, gndCy + 25, gndW + 20, 20, {
             isStatic: true, friction: 1
         });
 
@@ -213,13 +213,14 @@ document.addEventListener('DOMContentLoaded', () => {
         let px, py, tries = 0;
         while (tries < 60) {
             const a = Math.random() * Math.PI * 2;
-            const rx = 280, ry = 130; // Increased vertical spread for better leaf coverage
+            const rx = 320, ry = 140; // Even wider and higher spread to avoid density
             const d = Math.sqrt(Math.random()); 
             const tx = 450 + Math.cos(a) * rx * d - AW / 2;
-            const ty = 230 + Math.sin(a) * ry * d - AH / 2; // Moved DOWN (from 180 to 230)
+            const ty = 230 + Math.sin(a) * ry * d - AH / 2; 
             const ok = existing.every(el => {
                 const ex = parseFloat(el.style.left), ey = parseFloat(el.style.top);
-                return Math.hypot(ex - tx, ey - ty) >= 90; 
+                // Increased distance check to prevent visual overlapping
+                return Math.hypot(ex - tx, ey - ty) >= 105; 
             });
             if (ok) { px = tx; py = ty; break; }
             tries++;
