@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     Runner.run(Runner.create(), engine);
 
     // ── Constants ──
-    const STORAGE_KEY = 'apple_todos_v26';
+    const STORAGE_KEY = 'apple_todos_v27';
     const AW = 90, AH = 96, AR = 45; 
     const MAX_APPLES = 22; // Capacity check
 
@@ -125,8 +125,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const availH = window.innerHeight - container.offsetTop - 120; // Spare some for header/footer
         const availW = wrapper.clientWidth;
         
-        // Target unscaled size is 800x750 (compact height)
-        const scaleW = availW / 800;
+        // Target unscaled size is 900x750 (extra wide and compact height)
+        const scaleW = availW / 900;
         const scaleH = availH / 750;
         const scale = Math.min(scaleW, scaleH, 1.0); 
         
@@ -204,19 +204,18 @@ document.addEventListener('DOMContentLoaded', () => {
         let px, py, tries = 0;
         while (tries < 60) {
             const a = Math.random() * Math.PI * 2;
-            const rx = 240, ry = 110; 
+            const rx = 280, ry = 120; // Even wider and higher spread
             const d = Math.sqrt(Math.random()); 
-            const tx = 400 + Math.cos(a) * rx * d - AW / 2;
-            const ty = 220 + Math.sin(a) * ry * d - AH / 2; // Moved UP (from 300 to 220)
+            const tx = 450 + Math.cos(a) * rx * d - AW / 2;
+            const ty = 200 + Math.sin(a) * ry * d - AH / 2; // Moved UP further (from 220 to 200)
             const ok = existing.every(el => {
                 const ex = parseFloat(el.style.left), ey = parseFloat(el.style.top);
-                // Spread them out slightly more horizontally if possible
                 return Math.hypot(ex - tx, ey - ty) >= 88; 
             });
             if (ok) { px = tx; py = ty; break; }
             tries++;
         }
-        if (px === undefined) { px = 400; py = 220; }
+        if (px === undefined) { px = 450; py = 200; }
 
         apple.style.left = px + 'px';
         apple.style.top = py + 'px';
