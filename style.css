@@ -44,9 +44,7 @@ body {
 
 header {
     text-align: center;
-    margin-bottom: 8px;
-    margin-top: -15px;
-    /* Pull header up to reduce top space */
+    margin-bottom: 20px;
 }
 
 h1 {
@@ -135,8 +133,7 @@ input[type="text"] {
     display: flex;
     justify-content: center;
     align-items: flex-end;
-    margin: 0 auto -80px;
-    /* Center and pull up */
+    margin: 30px auto -60px; /* Separated from header */
 }
 
 .tree-svg-wrapper {
@@ -505,11 +502,12 @@ footer {
 @media (min-width: 1024px) {
     .garden-area {
         transform: scale(0.9);
-        margin-top: -60px;
     }
-
+    .garden-wrapper {
+        margin-top: 40px;
+    }
     .app-container {
-        padding: 30px 60px;
+        padding: 40px 60px;
     }
 }
 

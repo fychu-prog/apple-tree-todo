@@ -1,0 +1,108 @@
+<svg width="800" height="1000" viewBox="0 0 800 1000" xmlns="http://www.w3.org/2000/svg">
+  <!-- 背景區塊 -->
+  <rect width="800" height="1000" fill="#0d1117" />
+  
+  <!-- 定義箭頭與字型 -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#00e5ff" />
+    </marker>
+    <style>
+      .text { font-family: 'Courier New', Courier, monospace; fill: #00e5ff; font-size: 14px; text-anchor: middle; }
+      .node { fill: rgba(0, 229, 255, 0.1); stroke: #00e5ff; stroke-width: 2; rx: 10; ry: 10; }
+      .arrow { stroke: #00e5ff; stroke-width: 2; fill: none; }
+      .aux { stroke: #00e5ff; stroke-width: 1; stroke-dasharray: 5,5; fill: rgba(255, 255, 255, 0.05); }
+    </style>
+  </defs>
+
+  <!-- 主流程：由上至下 -->
+  
+  <!-- 入口點 -->
+  <g transform="translate(400, 50)">
+    <rect class="node" x="-150" y="0" width="300" height="50" />
+    <text x="0" y="30" class="text">DOMContentLoaded</text>
+    <text x="0" y="70" class="text" font-size="12" opacity="0.8">應用程式入口點</text>
+  </g>
+
+  <!-- 初始化 Matter.js -->
+  <g transform="translate(400, 150)">
+    <rect class="node" x="-150" y="0" width="300" height="60" />
+    <text x="0" y="25" class="text">Init Physics Engine</text>
+    <text x="0" y="45" class="text" font-size="12">建立 Matter.js 世界與邊界</text>
+  </g>
+
+  <!-- 數據載入 -->
+  <g transform="translate(400, 260)">
+    <rect class="node" x="-150" y="0" width="300" height="60" />
+    <text x="0" y="25" class="text">Load Local Data</text>
+    <text x="0" y="45" class="text" font-size="12">讀取 v20 儲存版本 &amp; Seed</text>
+  </g>
+
+  <!-- 外部存儲 (輔助節點) -->
+  <g transform="translate(150, 260)">
+    <rect class="node aux" x="-80" y="0" width="160" height="60" />
+    <text x="0" y="35" class="text" font-size="12">LocalStorage</text>
+  </g>
+
+  <!-- UI 循環：種植蘋果 -->
+  <g transform="translate(400, 380)">
+    <rect class="node" x="-150" y="0" width="300" height="60" />
+    <text x="0" y="25" class="text">addApple()</text>
+    <text x="0" y="45" class="text" font-size="12">生成 DOM 蘋果並掛載於樹</text>
+  </g>
+
+  <!-- 交互：採收 -->
+  <g transform="translate(400, 500)">
+    <rect class="node" x="-150" y="0" width="300" height="60" />
+    <text x="0" y="25" class="text">harvestApple()</text>
+    <text x="0" y="45" class="text" font-size="12">視覺轉紅並觸發物理轉換</text>
+  </g>
+
+  <!-- 物理轉換：掉落 -->
+  <g transform="translate(400, 620)">
+    <rect class="node" x="-150" y="0" width="300" height="60" />
+    <text x="0" y="25" class="text">spawnPhysApple()</text>
+    <text x="0" y="45" class="text" font-size="12">建立 Matter.Circle 實體</text>
+  </g>
+
+  <!-- 陀螺儀 (輔助節點) -->
+  <g transform="translate(650, 620)">
+    <rect class="node aux" x="-80" y="0" width="160" height="60" />
+    <text x="0" y="25" class="text" font-size="12">Gyroscope API</text>
+    <text x="0" y="45" class="text" font-size="10">Orientation -> Gravity</text>
+  </g>
+
+  <!-- 繪製循環 -->
+  <g transform="translate(400, 740)">
+    <rect class="node" x="-150" y="0" width="300" height="60" />
+    <text x="0" y="25" class="text">animate() loop</text>
+    <text x="0" y="45" class="text" font-size="12">同步物理座標與 DOM 影格</text>
+  </g>
+
+  <!-- 持久化 -->
+  <g transform="translate(400, 860)">
+    <rect class="node" x="-150" y="0" width="300" height="60" />
+    <text x="0" y="25" class="text">persist()</text>
+    <text x="0" y="45" class="text" font-size="12">更新數據狀態與 Badge</text>
+  </g>
+
+  <!-- PWA (輔助節點) -->
+  <g transform="translate(150, 860)">
+    <rect class="node aux" x="-80" y="0" width="160" height="60" />
+    <text x="0" y="35" class="text" font-size="12">sw.js (PWA)</text>
+  </g>
+
+  <!-- 連接線條 -->
+  <path class="arrow" d="M400,100 L400,140" marker-end="url(#arrowhead)" />
+  <path class="arrow" d="M400,210 L400,250" marker-end="url(#arrowhead)" />
+  <path class="arrow" d="M400,320 L400,370" marker-end="url(#arrowhead)" />
+  <path class="arrow" d="M400,440 L400,490" marker-end="url(#arrowhead)" />
+  <path class="arrow" d="M400,560 L400,610" marker-end="url(#arrowhead)" />
+  <path class="arrow" d="M400,680 L400,730" marker-end="url(#arrowhead)" />
+  <path class="arrow" d="M400,800 L400,850" marker-end="url(#arrowhead)" />
+
+  <!-- 輔助連線 -->
+  <path class="arrow" d="M230,290 L250,290" marker-end="url(#arrowhead)" />
+  <path class="arrow" d="M570,650 L550,650" marker-end="url(#arrowhead)" />
+  <path class="arrow" d="M230,890 L250,890" marker-end="url(#arrowhead)" />
+</svg>

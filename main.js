@@ -198,7 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const rx = 240, ry = 220; 
             const d = Math.sqrt(Math.random()); 
             const tx = 300 + Math.cos(a) * rx * d - AW / 2;
-            const ty = 90 + Math.sin(a) * ry * d - AH / 2; // Shifted UP even more
+            const ty = 140 + Math.sin(a) * ry * d - AH / 2; // Lowered from 90 to avoid header overlap
             const ok = existing.every(el => {
                 const ex = parseFloat(el.style.left), ey = parseFloat(el.style.top);
                 return Math.hypot(ex - tx, ey - ty) >= 95; 
