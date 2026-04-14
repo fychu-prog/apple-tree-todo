@@ -177,7 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const availW = wrapper.clientWidth - 20;
         
         const logicalW = 900;
-        const logicalH = 1550; // Total height including top margin and basket overflow
+        const logicalH = 1100; // Scale based on tree area; basket follows naturally below
         
         const scaleW = availW / logicalW;
         const scaleH = availH / logicalH;

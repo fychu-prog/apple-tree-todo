@@ -113,13 +113,14 @@ input[type="text"] {
 .garden-wrapper {
     width: 100%;
     display: flex;
-    justify-content: center;
-    align-items: flex-start; /* Pin to top to stay away from header */
+    flex-direction: column; 
+    align-items: center;
     flex: 1;
     min-height: 0;
-    overflow: hidden;
+    overflow-y: auto; 
+    overflow-x: hidden;
     position: relative;
-    z-index: 10;
+    padding-bottom: 200px; /* Extra room for ground-level basket */
 }
 
 .garden-scaler {
@@ -138,10 +139,9 @@ input[type="text"] {
 
 .garden-area {
     width: 900px;
-    height: 1450px; /* Full logical vertical span extended */
-    position: absolute;
-    top: 100px; /* Strong safety margin from header */
-    left: 0;
+    height: 1100px; /* Base scaling height for the tree area */
+    position: relative;
+    margin-top: 50px;
     overflow: visible; 
 }
 
@@ -275,12 +275,11 @@ input[type="text"] {
 
 /* ───────── Basket ───────── */
 .basket-outer {
-    position: absolute;
-    top: 1050px; /* On the ground at total height 1550 */
-    left: 50%;
-    transform: translateX(-50%);
-    width: 750px; /* Wider basket */
-    height: 450px; /* Deeper basket */
+    position: relative;
+    margin-top: -150px; /* Overlap trunk slightly instead of absolute top */
+    width: 750px; 
+    height: 450px;
+    z-index: 10;
     display: flex;
     flex-direction: column;
     align-items: center;
