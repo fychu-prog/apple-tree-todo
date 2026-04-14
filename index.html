@@ -30,13 +30,15 @@
         </header>
 
         <div id="garden-wrapper" class="garden-wrapper">
-            <main class="garden-area" id="garden-main">
-            <!-- Physics overlay - falling apples render here -->
-            <div id="physics-world" class="physics-world"></div>
+            <div id="garden-scaler" class="garden-scaler">
+                <div id="garden-transform" class="garden-transform">
+                    <main class="garden-area" id="garden-main">
+                    <!-- Physics overlay - falling apples render here -->
+                    <div id="physics-world" class="physics-world"></div>
 
-            <div class="tree-container">
+                    <div class="tree-container">
                 <div class="tree-svg-wrapper">
-                    <svg viewBox="-550 -600 1100 950" xmlns="http://www.w3.org/2000/svg" class="main-tree">
+                    <svg viewBox="-550 -750 1100 1100" xmlns="http://www.w3.org/2000/svg" class="main-tree">
                         <!-- Centered Strong Trunk - Much Shorter -->
                         <path d="M-30,350 L30,350 L20,-100 L-20,-100 Z" fill="#5D4037" />
                         <path d="M0,0 L-150,-200" stroke="#5D4037" stroke-width="16" fill="none" stroke-linecap="round"/>
@@ -51,8 +53,8 @@
                         <circle cx="300" cy="-430" r="200" fill="#43A047" />
                     </svg>
                 </div>
-                <div id="apples-on-tree" class="apples-layer"></div>
             </div>
+            <div id="apples-on-tree" class="apples-layer"></div>
 
             <!-- Basket with layered design -->
             <div class="basket-outer" id="basket-outer">
@@ -99,6 +101,8 @@
                 </svg>
             </div>
         </main>
+        </div>
+        </div>
         <!-- Floating Bulletin Button -->
         <button id="floating-bulletin-btn" class="floating-btn" aria-label="查看收穫公告欄">
             <span class="btn-icon">📋</span>
@@ -127,7 +131,6 @@
     </div>
 
     <script src="main.js"></script>
-    <!-- Register PWA Service Worker -->
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {

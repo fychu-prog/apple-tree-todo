@@ -19,12 +19,12 @@ document.addEventListener('DOMContentLoaded', () => {
     Runner.run(Runner.create(), engine);
 
     // ── Constants ──
-    const STORAGE_KEY = 'apple_todos_v30';
-    const AW = 90, AH = 96, AR = 45; 
-    const MAX_APPLES = 22; // Capacity check
+    const STORAGE_KEY = 'apple_todos_v31';
+    const AW = 80, AH = 86, AR = 40; // Slightly smaller apples for better fit
+    const MAX_APPLES = 12; // Calculated from foliage geometry — 12 fits comfortably
 
     // Clear all old storage versions
-    for (let i = 1; i <= 12; i++) {
+    for (let i = 1; i <= 30; i++) {
         localStorage.removeItem('apple_todos_v' + i);
     }
 
@@ -32,12 +32,77 @@ document.addEventListener('DOMContentLoaded', () => {
     const physApples = []; // { body, element }
     let walls = [];        // static Matter bodies for the basket
 
+    // ══════════════════════════════════════════════
+    // ── FOLIAGE GEOMETRY: SVG viewBox → pixel space ──
+    // ══════════════════════════════════════════════
+    // SVG viewBox: -550 -600 1100 950
+    // .tree-svg-wrapper renders SVG at max-width (matches wrapper)
+    // .apples-layer sits on top at width 800px, centered
+    //
+    // We define foliage circles in a NORMALIZED 0-1 coordinate system
+    // relative to the SVG viewBox, then convert at runtime.
+    
+    const SVG_VB = { x: -550, y: -750, w: 1100, h: 1100 };
+    
+    // Foliage circles in SVG coordinates (from index.html)
+    // Shifted slightly to compensate for potential offset
+    const FOLIAGE_SVG = [
+        { cx: 0,    cy: -250, r: 320 }, 
+        { cx: -250, cy: -150, r: 260 }, 
+        { cx: 250,  cy: -150, r: 260 },
+        { cx: 0,    cy: -480, r: 240 },
+        { cx: -300, cy: -430, r: 200 },
+        { cx: 300,  cy: -430, r: 200 }
+    ];
+
+    // Convert SVG foliage circles to apples-layer pixel coordinates
+    function getFoliagePixelCircles() {
+        const svgEl = document.querySelector('.main-tree');
+        const layer = applesContainer;
+        if (!svgEl || !layer) return [];
+
+        // Use the actual SVG element's rendered dimensions (respects aspect ratio)
+        const svgRect = svgEl.getBoundingClientRect();
+        const layerRect = layer.getBoundingClientRect();
+        
+        // Get the visual scale of the garden (transform: scale() applied)
+        const gardenRect = gardenEl.getBoundingClientRect();
+        const gardenScale = gardenRect.width / gardenEl.offsetWidth;
+        
+        // SVG pixel-per-viewBox-unit scales
+        const scaleX = svgRect.width / gardenScale / SVG_VB.w;
+        const scaleY = svgRect.height / gardenScale / SVG_VB.h;
+        
+        // Offset from the layer's top-left to the SVG's top-left (in unscaled coords)
+        const offsetX = (svgRect.left - layerRect.left) / gardenScale;
+        const offsetY = (svgRect.top - layerRect.top) / gardenScale;
+
+        const circles = FOLIAGE_SVG.map(c => ({
+            cx: (c.cx - SVG_VB.x) * scaleX + offsetX,
+            cy: (c.cy - SVG_VB.y) * scaleY + offsetY,
+            r: Math.min(c.r * scaleX, c.r * scaleY) // Use smaller scale for safety
+        }));
+        
+        console.log('Foliage circles (px):', circles.map(c => `(${Math.round(c.cx)},${Math.round(c.cy)} r=${Math.round(c.r)})`));
+        return circles;
+    }
+
+    // Check if a point (apple center) is inside ANY foliage circle
+    // with padding so the apple doesn't poke out of the edge
+    function isInsideFoliage(x, y, circles, padding) {
+        const appleCenterX = x + AW / 2;
+        const appleCenterY = y + AH / 2;
+        return circles.some(c => {
+            const dx = appleCenterX - c.cx;
+            const dy = appleCenterY - c.cy;
+            return Math.sqrt(dx * dx + dy * dy) <= (c.r - padding);
+        });
+    }
+
     // ── Helper: get position relative to gardenEl ──
     function relPos(el) {
         const r = el.getBoundingClientRect();
         const g = gardenEl.getBoundingClientRect();
-        // gardenEl might be scaled via transform: scale()
-        // we must calculate everything in unscaled 650x900 coordinate space for physics engine
         const scale = g.width / gardenEl.offsetWidth;
         return { 
             x: (r.left - g.left) / scale, 
@@ -56,21 +121,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!backSvg) return;
         const bp = relPos(backSvg);
         
-        // Exact mapping from viewBox "0 0 320 220"
-        const s = bp.w / 320; // 1.875
+        const s = bp.w / 320;
         const svgOffY = (bp.h - 220 * s) / 2; 
         
-        // Basket Bottom Ground: y=200, from x=60 to x=260
         const gndW = 200 * s;
         const gndCx = bp.x + 160 * s;
         const gndCy = bp.y + svgOffY + 200 * s;
-        // The rect's own center is y, lowered by an extra 15px to let apples sink deeper
         const ground = Bodies.rectangle(gndCx, gndCy + 25, gndW + 20, 20, {
             isStatic: true, friction: 1
         });
 
-        // Left wall: from (15,60) to (60,200)
-        // Move wall inwards slightly dynamically
         const lx1 = bp.x + 20 * s, ly1 = bp.y + svgOffY + 60 * s;
         const lx2 = bp.x + 60 * s, ly2 = bp.y + svgOffY + 200 * s;
         const lcx = (lx1 + lx2) / 2, lcy = (ly1 + ly2) / 2;
@@ -80,7 +140,6 @@ document.addEventListener('DOMContentLoaded', () => {
             isStatic: true, angle: lang, friction: 0.2
         });
 
-        // Right wall: from (305,60) to (260,200)
         const rx1 = bp.x + 300 * s, ry1 = bp.y + svgOffY + 60 * s;
         const rx2 = bp.x + 260 * s, ry2 = bp.y + svgOffY + 200 * s;
         const rcx = (rx1 + rx2) / 2, rcy = (ry1 + ry2) / 2;
@@ -90,12 +149,9 @@ document.addEventListener('DOMContentLoaded', () => {
             isStatic: true, angle: rang, friction: 0.2
         });
 
-        // Screen floor and literal container bounds (glass walls)
-        const gw = gardenEl.offsetWidth;  // Unscaled width (e.g. 650)
-        const gh = gardenEl.offsetHeight; // Unscaled height (e.g. 900)
+        const gw = gardenEl.offsetWidth;
+        const gh = gardenEl.offsetHeight;
         
-        // Container boundaries so apples don't fall off the window
-        // Keep them bounded inside the garden area
         const wallThickness = 100;
         const leftBound = Bodies.rectangle(-wallThickness/2, gh / 2, wallThickness, gh * 2, { isStatic: true });
         const rightBound = Bodies.rectangle(gw + wallThickness/2, gh / 2, wallThickness, gh * 2, { isStatic: true });
@@ -107,32 +163,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
         walls = [ground, leftW, rightW, screenGround, leftBound, rightBound, topBound];
         Composite.add(world, walls);
-
-        console.log('Basket walls built:', {
-            ground: { x: gndCx, y: gndCy, w: gndW },
-            leftWall: { cx: lcx, cy: lcy, angle: lang },
-            rightWall: { cx: rcx, cy: rcy, angle: rang }
-        });
     }
 
     // ── Responsive Scaling: Fit to Screen ──
     function resizeGarden() {
         const wrapper = document.getElementById('garden-wrapper');
+        const scaler = document.getElementById('garden-scaler');
         const container = document.querySelector('.app-container');
-        if (!wrapper || !container) return;
+        if (!wrapper || !container || !scaler) return;
         
-        // Calculate available space
-        const availH = window.innerHeight - container.offsetTop - 120; // Spare some for header/footer
-        const availW = wrapper.clientWidth;
+        // Use real wrapper size as final boundary
+        const availH = wrapper.clientHeight - 20; 
+        const availW = wrapper.clientWidth - 20;
         
-        // Target unscaled size is 900x650
-        const scaleW = availW / 900;
-        const scaleH = availH / 650;
-        const scale = Math.min(scaleW, scaleH, 1.0); 
+        const logicalW = 900;
+        const logicalH = 1550; // Total height including top margin and basket overflow
         
-        gardenEl.style.transform = `scale(${scale})`;
-        // Increase bottom buffer slightly for stable basket visibility
-        gardenEl.style.marginBottom = `-${(1 - scale) * 650 - 15}px`;
+        const scaleW = availW / logicalW;
+        const scaleH = availH / logicalH;
+        let scale = Math.min(scaleW, scaleH);
+        
+        // Apply width and height to scaler so flexbox perfectly centers it visually
+        scaler.style.width = `${logicalW * scale}px`;
+        scaler.style.height = `${logicalH * scale}px`;
+        
+        const transformEl = document.getElementById('garden-transform');
+        if (transformEl) {
+            transformEl.style.transform = `scale(${scale})`;
+        }
+        
+        const gardenEl = document.getElementById('garden-main');
+        if (gardenEl) {
+            gardenEl.style.transform = 'none';
+            gardenEl.style.marginBottom = '0px';
+        }
     }
 
     // Build walls after layout settles
@@ -163,39 +227,44 @@ document.addEventListener('DOMContentLoaded', () => {
     const TEST_ITEMS = [
         '早起喝水', '伸展運動', '閱讀15分鐘', '整理桌面', '寫日記',
         '聽音樂', '澆花', '冥想5分鐘', '規劃明天', '保持微笑',
-        '做家事', '散步', '學習新知', '感謝日記', '早點睡覺',
-        '吃健康五蔬果', '學習外語', '給家人打電話', '讀專業文章', '專注工作番茄鐘'
+        '做家事', '學習新知'
     ];
 
     if (saved.todos.length === 0 && saved.harvested.length === 0) {
-        TEST_ITEMS.forEach(t => addApple(t));
+        // Delay apple placement until layout is settled
+        setTimeout(() => {
+            TEST_ITEMS.forEach(t => addApple(t));
+        }, 350);
     } else {
-        saved.todos.forEach(t => addApple(t));
-        // Load harvested list items into the UI
-        if (saved.harvested && saved.harvested.length > 0) {
-            saved.harvested.forEach(text => {
-                const li = document.createElement('li');
-                li.className = 'done-item';
-                li.innerHTML = `<span>🍎 ${text}</span>`;
-                doneList.append(li);
-            });
-        }
+        setTimeout(() => {
+            saved.todos.forEach(t => addApple(t));
+            if (saved.harvested && saved.harvested.length > 0) {
+                saved.harvested.forEach(text => {
+                    const li = document.createElement('li');
+                    li.className = 'done-item';
+                    li.innerHTML = `<span>🍎 ${text}</span>`;
+                    doneList.append(li);
+                });
+            }
+        }, 350);
     }
 
     // Respawn harvested apples inside basket (after walls are built)
     setTimeout(() => {
         const bp = relPos(document.querySelector('.basket-back'));
         const cx = bp.x + bp.w / 2;
-        const topY = bp.y - 100; // Drop from slightly above the basket
+        const topY = bp.y - 100;
         
         saved.harvested.forEach((task, i) => {
             setTimeout(() => {
                 spawnPhysApple(task, cx + (Math.random() * 80 - 40), topY);
             }, i * 180);
         });
-    }, 400);
+    }, 500);
 
-    // ── Add a green apple to the tree ──
+    // ══════════════════════════════════════════════
+    // ── Add a green apple — GEOMETRY-BASED placement ──
+    // ══════════════════════════════════════════════
     function addApple(text) {
         if (!text) return;
         const apple = document.createElement('div');
@@ -208,24 +277,77 @@ document.addEventListener('DOMContentLoaded', () => {
         label.textContent = text;
         apple.appendChild(label);
 
-        // Find a non-overlapping position within the canopy
+        // Get foliage circles in pixel coordinates
+        const circles = getFoliagePixelCircles();
         const existing = Array.from(applesContainer.querySelectorAll('.apple'));
-        let px, py, tries = 0;
-        while (tries < 60) {
-            const a = Math.random() * Math.PI * 2;
-            const rx = 320, ry = 140; // Even wider and higher spread to avoid density
-            const d = Math.sqrt(Math.random()); 
-            const tx = 450 + Math.cos(a) * rx * d - AW / 2;
-            const ty = 230 + Math.sin(a) * ry * d - AH / 2; 
-            const ok = existing.every(el => {
-                const ex = parseFloat(el.style.left), ey = parseFloat(el.style.top);
-                // Increased distance check to prevent visual overlapping
-                return Math.hypot(ex - tx, ey - ty) >= 105; 
-            });
-            if (ok) { px = tx; py = ty; break; }
-            tries++;
+        
+        let px, py;
+        let bestPx, bestPy, bestMinDist = 0;
+        const EDGE_PADDING = 100; // Keep apple center this far from circle edge
+        const MIN_APPLE_DIST = AW + 20; // Minimum distance between apple centers
+        
+        // Try many random positions, pick the best one
+        for (let tries = 0; tries < 200; tries++) {
+            // Pick a random foliage circle weighted by area
+            const totalArea = circles.reduce((s, c) => s + c.r * c.r, 0);
+            let rnd = Math.random() * totalArea;
+            let chosen = circles[0];
+            for (const c of circles) {
+                rnd -= c.r * c.r;
+                if (rnd <= 0) { chosen = c; break; }
+            }
+            
+            // Random point inside chosen circle
+            const angle = Math.random() * Math.PI * 2;
+            const dist = Math.sqrt(Math.random()) * (chosen.r - EDGE_PADDING);
+            const tx = chosen.cx + Math.cos(angle) * dist - AW / 2;
+            const ty = chosen.cy + Math.sin(angle) * dist - AH / 2;
+            
+            // Verify this point is actually inside foliage (with edge padding)
+            if (!isInsideFoliage(tx, ty, circles, EDGE_PADDING)) continue;
+            
+            // Check for overlap with existing apples
+            let minDist = Infinity;
+            let overlapping = false;
+            for (const el of existing) {
+                const ex = parseFloat(el.style.left);
+                const ey = parseFloat(el.style.top);
+                const d = Math.hypot(ex - tx, ey - ty);
+                if (d < MIN_APPLE_DIST) { overlapping = true; break; }
+                if (d < minDist) minDist = d;
+            }
+            
+            if (!overlapping) {
+                // Track the position with the maximum minimum distance (best spread)
+                if (existing.length === 0 || minDist > bestMinDist) {
+                    bestMinDist = minDist;
+                    bestPx = tx;
+                    bestPy = ty;
+                }
+                // If we found a great spot, use it immediately
+                if (minDist > MIN_APPLE_DIST * 1.5) {
+                    px = tx; py = ty;
+                    break;
+                }
+            }
         }
-        if (px === undefined) { px = 450; py = 230; }
+        
+        // Use best found position, or fallback
+        if (px === undefined) {
+            if (bestPx !== undefined) {
+                px = bestPx;
+                py = bestPy;
+            } else {
+                // Absolute fallback: center of largest circle
+                const c = circles[0] || { cx: 400, cy: 250 };
+                px = c.cx - AW / 2;
+                py = c.cy - AH / 2;
+            }
+        }
+        
+        // Safety clamp: keep apples inside the layer bounds
+        px = Math.max(5, Math.min(px, (layer.offsetWidth || 800) - AW - 5));
+        py = Math.max(5, Math.min(py, (layer.offsetHeight || 600) - AH - 5));
 
         apple.style.left = px + 'px';
         apple.style.top = py + 'px';
@@ -238,19 +360,16 @@ document.addEventListener('DOMContentLoaded', () => {
     function harvest(apple, text) {
         if (apple.classList.contains('harvested')) return;
 
-        // CRITICAL: Capture exact offset center position ignoring container scale
         const ar = apple.getBoundingClientRect();
         const gr = gardenEl.getBoundingClientRect();
         const scale = gr.width / gardenEl.offsetWidth;
         const cx = (ar.left - gr.left) / scale + (ar.width / scale) / 2;
         const cy = (ar.top - gr.top) / scale + (ar.height / scale) / 2;
 
-        // Turn red on tree (no transform to avoid coord shift)
         apple.classList.add('harvested');
         apple.style.pointerEvents = 'none';
         apple.style.zIndex = '15';
 
-        // After red flash, swap to physics body at EXACT captured position
         setTimeout(() => {
             apple.remove();
             spawnPhysApple(text, cx, cy);
@@ -274,19 +393,16 @@ document.addEventListener('DOMContentLoaded', () => {
         physicsEl.appendChild(el);
 
         const body = Bodies.circle(x, y, AR, {
-            restitution: 0.12,  // Low bounce — apples don't bounce much
-            friction: 0.9,      // High friction — prevents sliding through each other
-            frictionStatic: 1.0,// Sticks when settled
-            density: 0.04       // Heavier — sinks into stack properly
+            restitution: 0.12,
+            friction: 0.9,
+            frictionStatic: 1.0,
+            density: 0.04
         });
-        // Tiny nudge so apples don't perfectly stack on top of each other
         Body.setVelocity(body, { x: (Math.random() - 0.5) * 1.5, y: 0 });
 
-        // Add drag support
         el.addEventListener('pointerdown', (e) => {
             el.setPointerCapture(e.pointerId);
             draggedBodyInfo = { body, dx: 0, dy: 0, apple: el, pointerId: e.pointerId };
-            // Optional: reset velocities when caught
             Body.setVelocity(body, { x: 0, y: 0 });
             Body.setAngularVelocity(body, 0);
         });
@@ -301,18 +417,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!draggedBodyInfo) return;
         const { body } = draggedBodyInfo;
         const gr = gardenEl.getBoundingClientRect();
-        
-        // Calculate the current visual scale of the garden
-        const wrapper = document.getElementById('garden-wrapper');
-        let w = wrapper ? wrapper.clientWidth : 650;
-        if (w > 650) w = 650;
-        const scale = w / 650;
-
-        // Calculate pointer position relative to garden in unscaled physics coordinates
+        const scale = gr.width / gardenEl.offsetWidth;
         const px = (e.clientX - gr.left) / scale;
         const py = (e.clientY - gr.top) / scale;
-        
-        // Directly set position for responsive feel, or apply forces
         Body.setPosition(body, { x: px, y: py });
         Body.setVelocity(body, { x: 0, y: 0 });
     });
@@ -340,7 +447,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         localStorage.setItem(STORAGE_KEY, JSON.stringify({ todos, count: harvestedCount, harvested }));
         
-        // Update Floating Badge
         const badge = document.getElementById('badge-count');
         if (badge) badge.textContent = harvestedCount;
     }
@@ -363,20 +469,17 @@ document.addEventListener('DOMContentLoaded', () => {
     clearBtn.addEventListener('click', () => {
         if (!confirm('確定清空所有收穫紀錄與重置籃子嗎？')) return;
         
-        // Remove harvested list UI elements
         doneList.innerHTML = '';
         
-        // Remove physical apples from world and DOM
         physApples.forEach(({ body, element }) => {
             Composite.remove(world, body);
             element.remove();
         });
         physApples.length = 0;
         
-        // Reactivate apples on the tree so they can be dropped again
         document.querySelectorAll('.harvested').forEach(el => {
             el.classList.remove('harvested');
-            el.style.pointerEvents = 'auto'; // Re-enable clicking
+            el.style.pointerEvents = 'auto';
             el.style.opacity = '1';
             el.style.zIndex = '1';
         });

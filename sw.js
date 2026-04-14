@@ -1,4 +1,4 @@
-const CACHE_NAME = 'apple-todo-cache-v2';
+const CACHE_NAME = 'apple-todo-cache-v3';
 const urlsToCache = [
   './',
   './index.html',
@@ -11,12 +11,10 @@ const urlsToCache = [
 ];
 
 self.addEventListener('install', event => {
-  self.skipWaiting(); // Force the waiting service worker to become the active service worker
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => {
-        return cache.addAll(urlsToCache);
-      })
+      .then(cache => cache.addAll(urlsToCache))
   );
 });
 
@@ -35,12 +33,6 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
   event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        if (response) {
-          return response;
-        }
-        return fetch(event.request);
-      })
+    fetch(event.request).catch(() => caches.match(event.request))
   );
 });
