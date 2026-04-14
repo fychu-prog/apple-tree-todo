@@ -276,11 +276,11 @@ input[type="text"] {
 /* ───────── Basket ───────── */
 .basket-outer {
     position: absolute;
-    top: 880px; /* Sits precisely on trunk */
+    top: 1050px; /* On the ground at total height 1550 */
     left: 50%;
     transform: translateX(-50%);
-    width: 600px;
-    height: 400px;
+    width: 750px; /* Wider basket */
+    height: 450px; /* Deeper basket */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -290,11 +290,11 @@ input[type="text"] {
 
 .basket-outer-front {
     position: absolute;
-    top: 0; /* Align with back layer */
+    top: 0;
     left: 50%;
     transform: translateX(-50%);
-    width: 600px;
-    height: 400px;
+    width: 750px;
+    height: 450px;
     z-index: 30;
     pointer-events: none;
     display: flex;

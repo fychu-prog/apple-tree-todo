@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── Constants ──
     const STORAGE_KEY = 'apple_todos_v31';
     const AW = 80, AH = 86, AR = 40; // Slightly smaller apples for better fit
-    const MAX_APPLES = 12; // Calculated from foliage geometry — 12 fits comfortably
+    const MAX_APPLES = 22; // Increased for testing
 
     // Clear all old storage versions
     for (let i = 1; i <= 30; i++) {
@@ -124,29 +124,29 @@ document.addEventListener('DOMContentLoaded', () => {
         const s = bp.w / 320;
         const svgOffY = (bp.h - 220 * s) / 2; 
         
-        const gndW = 200 * s;
-        const gndCx = bp.x + 160 * s;
-        const gndCy = bp.y + svgOffY + 200 * s;
-        const ground = Bodies.rectangle(gndCx, gndCy + 25, gndW + 20, 20, {
+        const gndW = bp.w * 0.7; 
+        const gndCx = bp.x + bp.w / 2;
+        const gndCy = bp.y + bp.h - 40 * s; 
+        const ground = Bodies.rectangle(gndCx, gndCy, gndW, 20, {
             isStatic: true, friction: 1
         });
-
-        const lx1 = bp.x + 20 * s, ly1 = bp.y + svgOffY + 60 * s;
-        const lx2 = bp.x + 60 * s, ly2 = bp.y + svgOffY + 200 * s;
+ 
+        const lx1 = bp.x + 40 * s, ly1 = bp.y + 100 * s;
+        const lx2 = bp.x + 100 * s, ly2 = bp.y + bp.h - 40 * s;
         const lcx = (lx1 + lx2) / 2, lcy = (ly1 + ly2) / 2;
         const llen = Math.hypot(lx2 - lx1, ly2 - ly1);
         const lang = Math.atan2(ly2 - ly1, lx2 - lx1) - Math.PI / 2;
         const leftW = Bodies.rectangle(lcx - 5, lcy, 10, llen + 40, {
             isStatic: true, angle: lang, friction: 0.2
         });
-
-        const rx1 = bp.x + 300 * s, ry1 = bp.y + svgOffY + 60 * s;
-        const rx2 = bp.x + 260 * s, ry2 = bp.y + svgOffY + 200 * s;
+ 
+        const rx1 = bp.x + bp.w - 40 * s, ry1 = bp.y + 100 * s;
+        const rx2 = bp.x + bp.w - 100 * s, ry2 = bp.y + bp.h - 40 * s;
         const rcx = (rx1 + rx2) / 2, rcy = (ry1 + ry2) / 2;
         const rlen = Math.hypot(rx2 - rx1, ry2 - ry1);
         const rang = Math.atan2(ry2 - ry1, rx2 - rx1) - Math.PI / 2;
         const rightW = Bodies.rectangle(rcx + 5, rcy, 10, rlen + 40, {
-            isStatic: true, angle: rang, friction: 0.2
+            isStatic: true, angle: lang, friction: 0.2
         });
 
         const gw = gardenEl.offsetWidth;
@@ -227,7 +227,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const TEST_ITEMS = [
         '早起喝水', '伸展運動', '閱讀15分鐘', '整理桌面', '寫日記',
         '聽音樂', '澆花', '冥想5分鐘', '規劃明天', '保持微笑',
-        '做家事', '學習新知'
+        '做家事', '學習新知', '喝杯好茶', '洗臉刷牙', '深呼吸',
+        '吃個水果', '散步一下', '整理筆記', '感謝日誌', '聽Podcast'
     ];
 
     if (saved.todos.length === 0 && saved.harvested.length === 0) {
